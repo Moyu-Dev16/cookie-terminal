@@ -56,10 +56,15 @@ export const AgentTerminal: React.FC = () => {
     },
   ]);
 
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const terminalBodyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (activeTab === 'terminal' && terminalBodyRef.current) {
+      terminalBodyRef.current.scrollTo({
+        top: terminalBodyRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
   }, [logs, activeTab]);
 
   const appendLog = (entry: Omit<LogEntry, 'id'>) => {
@@ -289,6 +294,7 @@ export const AgentTerminal: React.FC = () => {
           {/* Tab Selector */}
           <div className="flex items-center gap-1 bg-gray-950/80 p-1 rounded-lg border border-gray-800 ml-2">
             <button
+              type="button"
               onClick={() => setActiveTab('terminal')}
               className={`px-2.5 py-1 rounded text-xs transition flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'terminal'
@@ -300,6 +306,7 @@ export const AgentTerminal: React.FC = () => {
               <span>Copilot Terminal</span>
             </button>
             <button
+              type="button"
               onClick={() => setActiveTab('sentinel')}
               className={`px-2.5 py-1 rounded text-xs transition flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'sentinel'
@@ -311,6 +318,7 @@ export const AgentTerminal: React.FC = () => {
               <span>Sentinel Interceptor</span>
             </button>
             <button
+              type="button"
               onClick={() => setActiveTab('telemetry')}
               className={`px-2.5 py-1 rounded text-xs transition flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'telemetry'
@@ -452,7 +460,10 @@ export const AgentTerminal: React.FC = () => {
       {activeTab === 'terminal' && (
         <>
           {/* Terminal Stream Area */}
-          <div className="p-4 sm:p-6 space-y-4 max-h-[460px] min-h-[360px] overflow-y-auto">
+          <div
+            ref={terminalBodyRef}
+            className="p-4 sm:p-6 space-y-4 max-h-[460px] min-h-[360px] overflow-y-auto"
+          >
             {logs.map((log) => (
               <div key={log.id} className="space-y-1.5 animate-fadeIn">
                 <div className="flex items-start gap-2">
@@ -523,6 +534,7 @@ export const AgentTerminal: React.FC = () => {
                 {log.action && (
                   <div className="ml-6 pt-1">
                     <button
+                      type="button"
                       onClick={log.action.onClick}
                       className="px-4 py-1.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-semibold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
                     >
@@ -539,13 +551,13 @@ export const AgentTerminal: React.FC = () => {
                 Executing query against Cookie Chain & Moyu Sentinel...
               </div>
             )}
-            <div ref={scrollRef} />
           </div>
 
           {/* Quick Prompt Chips */}
           <div className="p-3 bg-gray-900/40 border-t border-gray-800/60 flex flex-wrap gap-2 text-xs">
             <span className="text-gray-500 select-none text-[11px] self-center mr-1">Quick Actions:</span>
             <button
+              type="button"
               onClick={() => handleCommand('Activate Sentinel Threat Interceptor audit')}
               className="px-2.5 py-1 rounded-md bg-emerald-950/60 hover:bg-emerald-900/80 text-emerald-300 border border-emerald-600/40 transition cursor-pointer flex items-center gap-1"
             >
@@ -553,6 +565,7 @@ export const AgentTerminal: React.FC = () => {
               🛡️ Sentinel Shield (11.4ms)
             </button>
             <button
+              type="button"
               onClick={() => handleCommand('Fetch 27-day workstation telemetry')}
               className="px-2.5 py-1 rounded-md bg-cyan-950/60 hover:bg-cyan-900/80 text-cyan-300 border border-cyan-600/40 transition cursor-pointer flex items-center gap-1"
             >
@@ -560,24 +573,28 @@ export const AgentTerminal: React.FC = () => {
               📡 27-Day Uptime Telemetry
             </button>
             <button
+              type="button"
               onClick={() => handleCommand('Check chain health and telemetry')}
               className="px-2.5 py-1 rounded-md bg-gray-800/80 hover:bg-gray-700 text-gray-300 hover:text-white border border-gray-700 transition cursor-pointer"
             >
               ⚡ Chain Telemetry
             </button>
             <button
+              type="button"
               onClick={() => handleCommand('Quote swap 10 COOK to bCOOK via Cookiebox')}
               className="px-2.5 py-1 rounded-md bg-gray-800/80 hover:bg-gray-700 text-gray-300 hover:text-white border border-gray-700 transition cursor-pointer"
             >
               🔄 Quote 10 COOK ➔ bCOOK
             </button>
             <button
+              type="button"
               onClick={() => handleCommand('Top DEX liquidity pools')}
               className="px-2.5 py-1 rounded-md bg-gray-800/80 hover:bg-gray-700 text-gray-300 hover:text-white border border-gray-700 transition cursor-pointer"
             >
               📊 Liquidity Pools
             </button>
             <button
+              type="button"
               onClick={() => handleCommand('Inspect COOKHOUSE token on Cookie Chain')}
               className="px-2.5 py-1 rounded-md bg-gray-800/80 hover:bg-gray-700 text-gray-300 hover:text-white border border-gray-700 transition cursor-pointer"
             >
