@@ -15,6 +15,15 @@ export const Footer: React.FC = () => {
 
         <div className="flex flex-wrap items-center gap-5 text-gray-400">
           <a
+            href="https://github.com/Moyu-Dev16/moyu-sentinel/blob/main/WHITEPAPER.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-emerald-400 flex items-center gap-1 transition"
+          >
+            <BookOpen className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="text-emerald-300 font-semibold">Whitepaper</span>
+          </a>
+          <a
             href="https://docs.cookiechain.wtf"
             target="_blank"
             rel="noopener noreferrer"
