@@ -5,7 +5,7 @@ import { AgentTerminal } from './components/AgentTerminal';
 import { SwapCard } from './components/SwapCard';
 import { MarketGrid } from './components/MarketGrid';
 import { Footer } from './components/Footer';
-import { Sparkles, Terminal, Cpu, ArrowUpRight } from 'lucide-react';
+import { Sparkles, Terminal, Cpu, ArrowUpRight, ShieldCheck, Server, Lock } from 'lucide-react';
 
 export function AppContent() {
   return (
@@ -14,27 +14,33 @@ export function AppContent() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 flex-1 w-full">
         {/* Banner */}
-        <div className="relative rounded-3xl bg-gradient-to-r from-amber-950/40 via-gray-900/60 to-emerald-950/30 border border-amber-500/20 p-6 sm:p-8 overflow-hidden shadow-2xl">
-          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 rounded-full bg-amber-500/10 blur-3xl pointer-events-none"></div>
+        <div className="relative rounded-3xl bg-gradient-to-r from-amber-950/40 via-gray-900/70 to-emerald-950/40 border border-amber-500/20 p-6 sm:p-8 overflow-hidden shadow-2xl">
+          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none"></div>
           <div className="relative z-10 max-w-3xl space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-mono font-semibold">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Official Cookie Chain SVM Ecosystem cApp</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-mono font-semibold">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Official Cookie Chain SVM Ecosystem cApp</span>
+              </div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-mono font-semibold">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Protected by Moyu-Sentinel (11.4ms)</span>
+              </div>
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-mono">
               Autonomous AI Copilot & Terminal for <span className="text-amber-400">Cookie Chain</span>
             </h1>
             <p className="text-sm sm:text-base text-gray-300 font-mono leading-relaxed">
-              Interact with sub-second finality, query real-time DAS market data, quote multi-venue DEX swaps, and sign non-custodial transactions directly via <span className="text-amber-300 font-bold">Nightly Wallet</span> and <span className="text-emerald-400 font-bold">cookie-mcp</span>.
+              Interact with sub-second finality, query real-time DAS market data, quote multi-venue DEX swaps, and sign non-custodially via <span className="text-amber-300 font-bold">Nightly Wallet</span>. Protected by <span className="text-emerald-400 font-bold">Moyu Sentinel</span> sub-15ms threat interception & 27-day physical bare-metal telemetry.
             </p>
             <div className="flex flex-wrap items-center gap-3 pt-2 text-xs font-mono text-gray-400">
               <span className="flex items-center gap-1.5 bg-gray-900/80 px-3 py-1 rounded-lg border border-gray-800">
-                <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-                Sub-Second Finality
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                Sentinel Sub-15ms Threat Interceptor
               </span>
               <span className="flex items-center gap-1.5 bg-gray-900/80 px-3 py-1 rounded-lg border border-gray-800">
-                <span className="w-2 h-2 rounded-full bg-amber-400"></span>
-                ~$0.0001 Gas Fees
+                <span className="w-2 h-2 rounded-full bg-cyan-400"></span>
+                27-Day Bare-Metal Telemetry
               </span>
               <span className="flex items-center gap-1.5 bg-gray-900/80 px-3 py-1 rounded-lg border border-gray-800">
                 <span className="w-2 h-2 rounded-full bg-blue-400"></span>
@@ -42,7 +48,7 @@ export function AppContent() {
               </span>
               <span className="flex items-center gap-1.5 bg-gray-900/80 px-3 py-1 rounded-lg border border-gray-800">
                 <span className="w-2 h-2 rounded-full bg-purple-400"></span>
-                cookie-mcp External-Signer
+                Dual-Key Non-Custodial Mesh
               </span>
             </div>
           </div>
