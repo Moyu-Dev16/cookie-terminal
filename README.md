@@ -53,25 +53,31 @@ Implements the external-signer paradigm defined by Cookie Chain's official Model
 
 ## 🏗️ Architecture
 
-`
-                                  ┌───────────────────────────────┐
-                                  │      Nightly Wallet           │
-                                  │  (External Client Signer)     │
-                                  └──────────────▲────────────────┘
-                                                 │ Sign Tx
-                                                 ▼
-┌───────────────────────┐         ┌───────────────────────────────┐
-│     User / Trader     │ ◄─────► │        CookieTerminal         │
-│  (Chat / Instant Swap)│         │     (React + Vite + SVM)      │
-└───────────────────────┘         └───────┬───────────────┬───────┘
-                                          │               │
-                   cookie-mcp Tool RPCs   │               │ REST / Aggregator
-                                          ▼               ▼
-                       ┌──────────────────────┐ ┌──────────────────────┐
-                       │  Cookie Chain (SVM)  │ │   Cookiebox Router   │
-                       │ rpc.cookiescan.io    │ │ agg.cookiebox.app    │
-                       └──────────────────────┘ └──────────────────────┘
-`
+```mermaid
+graph TD
+    subgraph Client ["Client & Non-Custodial Layer"]
+        User["👤 User / Trader<br/>(Prompts & Swaps)"]
+        Nightly["🦊 Nightly Wallet<br/>(External Signer)"]
+        Terminal["🍪 CookieTerminal<br/>(React + Vite + SVM)"]
+    end
+
+    subgraph Security ["Moyu Sentinel Security Mesh"]
+        Sentinel["🛡️ Moyu Sentinel<br/>Threat Interceptor & Telemetry<br/>(&lt;15ms Latency)"]
+    end
+
+    subgraph Chain ["Network & Liquidity Layer"]
+        RPC["⚡ Cookie Chain (SVM)<br/>rpc.cookiescan.io"]
+        Router["🔄 Cookiebox Aggregator<br/>agg.cookiebox.app"]
+        Oven["🌐 CookOven Registry<br/>(.cook Domains)"]
+    end
+
+    User <-->|Prompts & Intents| Terminal
+    Terminal <-->|Pre-flight Audit & Simulation| Sentinel
+    Terminal <-->|Unsigned Tx / Signature Request| Nightly
+    Terminal -->|RPC Queries & Broadcast| RPC
+    Terminal -->|DEX Quotes & Swaps| Router
+    Terminal -->|Domain Resolution| Oven
+```
 
 ---
 
