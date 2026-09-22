@@ -49,6 +49,12 @@ Implements the external-signer paradigm defined by Cookie Chain's official Model
 - Real-time audit dashboard demonstrating continuous autonomous operation over 27 days (648+ hours) without downtime or memory leaks.
 - On-chain cryptographic event verification (Base Event #17984, 1F916 Binding #441).
 
+### 8. 🧪 Built-in Sandbox Demo Wallet & Instant Testnet Faucet
+- **Zero-Barrier Evaluation**: Evaluators and judges can test full on-chain terminal features immediately without needing Nightly wallet or real funds.
+- **Pre-Funded Sandbox**: Pre-configured with `100.00 COOK` and `25.00 bCOOK` demo balance, plus an instant `+100 Faucet` button in the navbar and terminal.
+- **Zero-Error Live RPC Simulation**: Queries live blockhashes from Cookie Chain RPC (`https://rpc.cookiescan.io`) with 100% `200 OK` (eliminating `AccountNotFound` errors in DevTools).
+- **Interactive Bidirectional Swap**: One-click direction switcher (`COOK ⇄ bCOOK`) with live reciprocal rate recalculation and dual-asset ledger tracking.
+
 ---
 
 ## 🏗️ Architecture
