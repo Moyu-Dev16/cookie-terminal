@@ -78,10 +78,14 @@ export function AppContent() {
   );
 }
 
+import { SandboxProvider } from './context/SandboxContext';
+
 export default function App() {
   return (
     <WalletProvider>
-      <AppContent />
+      <SandboxProvider>
+        <AppContent />
+      </SandboxProvider>
     </WalletProvider>
   );
 }
