@@ -6,7 +6,16 @@ import { ArrowDownUp, RefreshCw, CheckCircle, ExternalLink, ShieldAlert, ShieldC
 
 export const SwapCard: React.FC = () => {
   const { publicKey, connected } = useWallet();
-  const { isSandboxMode, sandboxBalance, deductBalance } = useSandbox();
+  const {
+    isSandboxMode,
+    sandboxBalance,
+    sandboxBcookBalance,
+    deductBalance,
+    addBalance,
+    claimFaucet,
+  } = useSandbox();
+
+  const [isReversed, setIsReversed] = useState(false);
   const [inAmount, setInAmount] = useState('1');
   const [quote, setQuote] = useState<SwapQuoteResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -14,7 +23,16 @@ export const SwapCard: React.FC = () => {
   const [txSuccess, setTxSuccess] = useState<string | null>(null);
   const [txMeta, setTxMeta] = useState<{ isSandbox: boolean; blockhash?: string } | null>(null);
 
-  const fetchQuote = async (val: string) => {
+  const currentInputSymbol: 'COOK' | 'bCOOK' = isReversed ? 'bCOOK' : 'COOK';
+  const currentOutputSymbol: 'COOK' | 'bCOOK' = isReversed ? 'COOK' : 'bCOOK';
+  const currentInputMint = isReversed ? BCOOK_MINT : COOK_MINT;
+  const currentOutputMint = isReversed ? COOK_MINT : BCOOK_MINT;
+  const currentInputIcon = isReversed ? '🥩' : '🍪';
+  const currentOutputIcon = isReversed ? '🍪' : '🥩';
+
+  const currentAvailableBalance = isReversed ? sandboxBcookBalance : sandboxBalance;
+
+  const fetchQuote = async (val: string, fromMint = currentInputMint, toMint = currentOutputMint) => {
     if (!val || Number(val) <= 0) {
       setQuote(null);
       return;
@@ -22,7 +40,7 @@ export const SwapCard: React.FC = () => {
     setLoading(true);
     try {
       const atomic = (Number(val) * 1e9).toFixed(0);
-      const res = await getSwapQuote(COOK_MINT, BCOOK_MINT, atomic);
+      const res = await getSwapQuote(fromMint, toMint, atomic);
       setQuote(res);
     } catch (e) {
       console.error(e);
@@ -32,16 +50,23 @@ export const SwapCard: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchQuote(inAmount);
-  }, [inAmount]);
+    fetchQuote(inAmount, currentInputMint, currentOutputMint);
+  }, [inAmount, isReversed]);
+
+  const handleSwitchDirection = () => {
+    setIsReversed((prev) => !prev);
+    setTxSuccess(null);
+  };
 
   const handleSwap = async () => {
     const numIn = Number(inAmount);
     if (!numIn || numIn <= 0) return;
 
     if (isSandboxMode) {
-      if (sandboxBalance < numIn) {
-        alert(`Insufficient Demo COOK balance (${sandboxBalance.toFixed(2)} COOK). Click "+100 Faucet" in the top bar to claim more!`);
+      if (currentAvailableBalance < numIn) {
+        alert(
+          `Insufficient Demo ${currentInputSymbol} balance (${currentAvailableBalance.toFixed(2)} ${currentInputSymbol}). Click "+100 Faucet" in the top bar to claim more!`
+        );
         return;
       }
       setSwapping(true);
@@ -50,11 +75,14 @@ export const SwapCard: React.FC = () => {
 
       try {
         const atomic = (numIn * 1e9).toFixed(0);
-        // buildSwapTx with forceSandbox=true hits live RPC getLatestBlockhash directly (200 OK)
-        const tx = await buildSwapTx(COOK_MINT, BCOOK_MINT, atomic, DEMO_WALLET_ADDRESS, 50, true);
+        const tx = await buildSwapTx(currentInputMint, currentOutputMint, atomic, DEMO_WALLET_ADDRESS, 50, true);
         await new Promise((r) => setTimeout(r, 800));
 
-        deductBalance(numIn);
+        deductBalance(numIn, currentInputSymbol);
+        if (expectedOut && Number(expectedOut) > 0) {
+          addBalance(Number(expectedOut), currentOutputSymbol);
+        }
+
         const simTxHash = `4GjZ${Math.random().toString(36).substring(2, 8)}X8u9${Math.random().toString(36).substring(2, 8)}`;
         setTxSuccess(simTxHash);
         setTxMeta({ isSandbox: true, blockhash: tx?.blockhash });
@@ -73,8 +101,8 @@ export const SwapCard: React.FC = () => {
 
     try {
       const atomic = (numIn * 1e9).toFixed(0);
-      const tx = await buildSwapTx(COOK_MINT, BCOOK_MINT, atomic, publicKey.toBase58(), 50, false);
-      
+      const tx = await buildSwapTx(currentInputMint, currentOutputMint, atomic, publicKey.toBase58(), 50, false);
+
       // In web app, simulate wallet signature
       await new Promise((r) => setTimeout(r, 1200));
       const simulatedHash = `5Hk${Math.random().toString(36).substring(2, 9)}Z7q${Math.random().toString(36).substring(2, 9)}Xm9`;
@@ -109,11 +137,24 @@ export const SwapCard: React.FC = () => {
             <span>You Pay</span>
             <span>
               {isSandboxMode ? (
-                <span className="text-amber-300 font-semibold">Demo: {sandboxBalance.toFixed(2)} COOK</span>
+                <span className="flex items-center gap-1.5">
+                  <span className="text-amber-300 font-semibold">
+                    Demo: {currentAvailableBalance.toFixed(2)} {currentInputSymbol}
+                  </span>
+                  {currentAvailableBalance <= 0 && (
+                    <button
+                      type="button"
+                      onClick={() => claimFaucet(100)}
+                      className="text-[10px] text-amber-400 hover:text-amber-300 underline cursor-pointer"
+                    >
+                      +Faucet
+                    </button>
+                  )}
+                </span>
               ) : connected ? (
                 <span className="text-emerald-400">Wallet Connected</span>
               ) : (
-                <span>Balance: -- COOK</span>
+                <span>Balance: -- {currentInputSymbol}</span>
               )}
             </span>
           </div>
@@ -127,24 +168,43 @@ export const SwapCard: React.FC = () => {
               className="bg-transparent text-xl font-bold text-white focus:outline-none w-full"
               placeholder="0.0"
             />
-            <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/30 rounded-lg text-amber-300 font-bold text-xs shrink-0">
-              <span>🍪 COOK</span>
+            <div
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg font-bold text-xs shrink-0 ${
+                isReversed
+                  ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-300'
+                  : 'bg-amber-500/10 border border-amber-500/30 text-amber-300'
+              }`}
+            >
+              <span>
+                {currentInputIcon} {currentInputSymbol}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Direction Switcher */}
+        {/* Direction Switcher (Interactive) */}
         <div className="flex justify-center -my-2 relative z-10">
-          <div className="w-8 h-8 rounded-full bg-gray-900 border border-gray-700 flex items-center justify-center text-amber-400 shadow-md">
-            <ArrowDownUp className="w-3.5 h-3.5" />
-          </div>
+          <button
+            type="button"
+            onClick={handleSwitchDirection}
+            title="Switch swap direction (COOK ⇄ bCOOK)"
+            className="w-8 h-8 rounded-full bg-gray-900 border border-gray-700 hover:border-amber-500 hover:bg-gray-800 flex items-center justify-center text-amber-400 hover:text-amber-300 hover:scale-110 active:scale-95 transition-all shadow-md cursor-pointer group"
+          >
+            <ArrowDownUp className="w-3.5 h-3.5 transition-transform duration-300 group-hover:rotate-180" />
+          </button>
         </div>
 
         {/* Output Box */}
         <div className="p-3 bg-gray-950 rounded-xl border border-gray-800">
           <div className="flex justify-between text-xs text-gray-400 mb-1">
             <span>You Receive</span>
-            <span>Estimated</span>
+            <span>
+              {isSandboxMode && (
+                <span className="text-gray-400 text-[10px]">
+                  Balance: {isReversed ? sandboxBalance.toFixed(2) : sandboxBcookBalance.toFixed(2)} {currentOutputSymbol}
+                </span>
+              )}
+            </span>
           </div>
           <div className="flex items-center justify-between gap-3">
             <div className="text-xl font-bold text-emerald-400">
@@ -156,8 +216,16 @@ export const SwapCard: React.FC = () => {
                 expectedOut
               )}
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-emerald-300 font-bold text-xs shrink-0">
-              <span>🥩 bCOOK</span>
+            <div
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg font-bold text-xs shrink-0 ${
+                isReversed
+                  ? 'bg-amber-500/10 border border-amber-500/30 text-amber-300'
+                  : 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-300'
+              }`}
+            >
+              <span>
+                {currentOutputIcon} {currentOutputSymbol}
+              </span>
             </div>
           </div>
         </div>
@@ -167,7 +235,9 @@ export const SwapCard: React.FC = () => {
           <div className="mt-3 p-2.5 bg-gray-900/40 rounded-lg border border-gray-800/80 text-[11px] text-gray-400 space-y-1">
             <div className="flex justify-between">
               <span>Rate:</span>
-              <span className="text-gray-300">1 COOK ≈ {(Number(quote.outAmount) / Number(quote.inAmount)).toFixed(4)} bCOOK</span>
+              <span className="text-gray-300">
+                1 {currentInputSymbol} ≈ {(Number(quote.outAmount) / Number(quote.inAmount)).toFixed(4)} {currentOutputSymbol}
+              </span>
             </div>
             <div className="flex justify-between">
               <span>Price Impact:</span>
@@ -190,7 +260,7 @@ export const SwapCard: React.FC = () => {
         {isSandboxMode ? (
           <button
             onClick={handleSwap}
-            disabled={swapping || loading || Number(inAmount) <= 0 || sandboxBalance < Number(inAmount)}
+            disabled={swapping || loading || Number(inAmount) <= 0 || currentAvailableBalance < Number(inAmount)}
             className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold text-sm shadow-lg shadow-amber-600/20 disabled:opacity-50 transition cursor-pointer flex items-center justify-center gap-2"
           >
             {swapping ? (
